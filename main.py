@@ -21,28 +21,35 @@ def client_setup():
 def get_completion(client, messages, model):
     return client.chat.completions.create(model=model, messages=messages)
 
-def user_input():
+def parse_args():
     parser = argparse.ArgumentParser(description="AI Agent")
     parser.add_argument("user_prompt", type=str, help="User prompt")
+    parser.add_argument("--verbose", action="store_true", help="enable verbose output")
     args = parser.parse_args()
 
-    return args.user_prompt
+    return args
 
 def verify_completion(completion):
     if completion.usage is None:
         raise RuntimeError("Incorrect API response")
-    return True
 
-def completion_printer(prompt, completion, messages):
-    print(f"User Prompt: {prompt}")
-    print(f"Prompt tokens: {completion.usage.prompt_tokens}")
-    print(f"Response tokens: {completion.usage.completion_tokens}")
+def simple_printer(completion):
     print("Response:")
     print(completion.choices[0].message.content)
 
+def make_verbose_printer(base_printer, completion, prompt):
+    def enhanced_printer():
+        print(f"User prompt: {prompt}")
+        print(f"Prompt tokens: {completion.usage.prompt_tokens}")
+        print(f"Response tokens: {completion.usage.completion_tokens}")
+        base_printer(completion)
+    return enhanced_printer
+
 def main():
     client = client_setup()
-    prompt = user_input()
+    args = parse_args()
+    prompt = args.user_prompt
+    verbose = args.verbose
 
     messages = [
         {
@@ -52,9 +59,13 @@ def main():
     ]
 
     completion = get_completion(client, messages, MODEL)
-
     verify_completion(completion)
-    completion_printer(prompt, completion, messages)
+
+    if verbose:
+        verbose_printer = make_verbose_printer(simple_printer, completion, prompt)
+        verbose_printer()
+    else:
+        simple_printer(completion)
 
 if __name__ == "__main__":
     main()
