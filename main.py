@@ -1,6 +1,25 @@
-def main():
-    print("Hello from ai-agent-v2!")
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
 
+load_dotenv()
+api_key = os.environ.get("OPENROUTER_API_KEY")
 
-if __name__ == "__main__":
-    main()
+if not api_key:
+    raise RuntimeError("No OpenRouter API Key Found")
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=api_key,
+)
+
+model = "openrouter/free"
+messages=[
+    {
+        "role": "user",
+        "content": "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
+    }
+]
+
+response = client.chat.completions.create(model=model, messages=messages)
+print(response.choices[0].message.content)
