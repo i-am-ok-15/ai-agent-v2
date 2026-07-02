@@ -21,5 +21,25 @@ messages=[
     }
 ]
 
-response = client.chat.completions.create(model=model, messages=messages)
-print(response.choices[0].message.content)
+completion = client.chat.completions.create(model=model, messages=messages)
+
+def verify_completion(completion):
+    if not completion:
+        return RuntimeError("Completion == None")
+    return True
+
+def completion_printer(completion):
+    print(f"User Prompt: {messages[0]["content"]}")
+    print(f"Prompt tokens: {completion.usage.prompt_tokens}")
+    print(f"Response tokens: {completion.usage.completion_tokens}")
+    print("Response:")
+    print(completion.choices[0].message.content)
+
+def main():
+    if verify_completion(completion):
+        completion_printer(completion)
+
+    else:
+        print("Failed to generate completion.")
+
+main()
