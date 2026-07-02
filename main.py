@@ -2,7 +2,7 @@ import os
 import argparse
 from dotenv import load_dotenv
 from openai import OpenAI
-from config import *
+from config import BASE_URL, MODEL
 
 def client_setup():
     load_dotenv()
@@ -16,9 +16,7 @@ def client_setup():
         api_key=api_key,
     )
 
-    model = MODEL
-
-    return client, model
+    return client
 
 def get_completion(client, messages, model):
     return client.chat.completions.create(model=model, messages=messages)
@@ -27,34 +25,36 @@ def user_input():
     parser = argparse.ArgumentParser(description="AI Agent")
     parser.add_argument("user_prompt", type=str, help="User prompt")
     args = parser.parse_args()
-    messages=[
-        {
-            "role": "user",
-            "content": args.user_prompt,
-        }
-    ]
-    return messages
+
+    return args.user_prompt
 
 def verify_completion(completion):
-    if not completion:
-        return RuntimeError("Completion == None")
+    if completion.usage is None:
+        raise RuntimeError("Incorrect API response")
     return True
 
-def completion_printer(completion, messages):
-    print(f"User Prompt: {messages[0]["content"]}")
+def completion_printer(prompt, completion, messages):
+    print(f"User Prompt: {prompt}")
     print(f"Prompt tokens: {completion.usage.prompt_tokens}")
     print(f"Response tokens: {completion.usage.completion_tokens}")
     print("Response:")
     print(completion.choices[0].message.content)
 
 def main():
-    client, model = client_setup()
-    messages = user_input()
-    completion = get_completion(client, messages, model)
+    client = client_setup()
+    prompt = user_input()
 
-    if verify_completion(completion):
-        completion_printer(completion, messages)
-    else:
-        print("Failed to generate completion.")
+    messages = [
+        {
+            "role": "user",
+            "content": prompt,
+        }
+    ]
 
-main()
+    completion = get_completion(client, messages, MODEL)
+
+    verify_completion(completion)
+    completion_printer(prompt, completion, messages)
+
+if __name__ == "__main__":
+    main()
