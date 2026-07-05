@@ -1,9 +1,9 @@
-from functions.get_files_info import get_files_info
+from functions.get_file_info import get_file_info
 
-def test_get_files_info():
-    print(get_files_info("calculator", "."))
-    print(get_files_info("calculator", "/bin"))
-    print(get_files_info("calculator", "../"))
-    print(get_files_info("calculator", "main.py"))
+def test_get_file_info():
+    print(get_file_info("calculator", "."))
+    print(get_file_info("calculator", "/bin"))
+    print(get_file_info("calculator", "../"))
+    print(get_file_info("calculator", "main.py"))
 
-test_get_files_info()
+test_get_file_info()
