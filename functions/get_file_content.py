@@ -18,6 +18,6 @@ def get_file_content(working_directory: str, file_path: str) -> str:
             content = f.read(MAX_CHARS)
             if f.read(MAX_CHARS + 1):
                 content += f'[...File "{file_path}" truncated at {MAX_CHARS} characters]'
-            return f"{file_path} length: {len(content)}\n{file_path} truncated: {'truncated' in content}\n Truncated content: {content[:2000]}"
+            return f"{file_path} length: {len(content)}\n{file_path} truncated: {'truncated' in content}\nTruncated content: {content[:2000]}"
     except Exception as e:
         return f"Error: {e}"
