@@ -20,3 +20,21 @@ def get_file_content(working_directory: str, file_path: str) -> str:
             return f"{file_path} length: {len(content)}\n{file_path} truncated: {'truncated' in content}\nTruncated content: {content[:2000]}"
     except Exception as e:
         return f"Error: {e}"
+    
+schema_get_file_content = {
+    "type": "function",
+    "function": {
+        "name": "get_file_content",
+        "description": "Retrieve the content of a file. This function will truncate the content and limit it to 10000 characters. If truncated the function will add a line stating that it has been truncated.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Target path to retrieve content from.",
+                },
+            },
+            "required": ["file_path"],
+        },
+    },
+}
