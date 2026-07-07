@@ -1,6 +1,5 @@
 import os
 from config import MAX_CHARS
-from functions.get_file_info import get_file_info
 from functions.file_paths import abs_target_path, abs_working_path
 
 def get_file_content(working_directory: str, file_path: str) -> str:
@@ -14,7 +13,7 @@ def get_file_content(working_directory: str, file_path: str) -> str:
         if not os.path.isfile(target_path):
             return f'Error: File not found or is not a regular file: "{file_path}"'
 
-        with open(abs_target_path(working_directory, file_path), "r") as f:
+        with open(target_path, "r") as f:
             content = f.read(MAX_CHARS)
             if f.read(MAX_CHARS + 1):
                 content += f'[...File "{file_path}" truncated at {MAX_CHARS} characters]'
