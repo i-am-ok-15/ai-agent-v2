@@ -1,9 +1,11 @@
 import os
 import argparse
+import json
 from prompts import system_prompt
 from dotenv import load_dotenv
 from openai import OpenAI
 from config import BASE_URL, MODEL
+from call_function import available_functions
 
 def client_setup():
     load_dotenv()
@@ -19,8 +21,8 @@ def client_setup():
 
     return client
 
-def get_completion(client, messages, model):
-    return client.chat.completions.create(model=model, messages=messages)
+def get_completion(client, messages, model, tools):
+    return client.chat.completions.create(model=model, messages=messages, tools=tools)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="AI Agent")
@@ -57,8 +59,16 @@ def main():
         {"role": "user", "content": prompt},
     ]
 
-    completion = get_completion(client, messages, MODEL)
+    completion = get_completion(client, messages, MODEL, tools=available_functions)
     verify_completion(completion)
+
+    message = completion.choices[0].message
+    if message.tool_calls:
+        for tool_call in message.tool_calls:
+            function_args = json.loads(tool_call.function.arguments or "{}")
+            print(f"Calling function: {tool_call.function.name}({function_args})")
+    else:
+        print(message.content)
 
     if verbose:
         verbose_printer = make_verbose_printer(simple_printer, completion, prompt)
@@ -67,4 +77,5 @@ def main():
         simple_printer(completion)
 
 if __name__ == "__main__":
+
     main()
