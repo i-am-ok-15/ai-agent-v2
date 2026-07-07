@@ -1,5 +1,6 @@
 import os
 import argparse
+from prompts import system_prompt
 from dotenv import load_dotenv
 from openai import OpenAI
 from config import BASE_URL, MODEL
@@ -52,10 +53,8 @@ def main():
     verbose = args.verbose
 
     messages = [
-        {
-            "role": "user",
-            "content": prompt,
-        }
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt},
     ]
 
     completion = get_completion(client, messages, MODEL)
