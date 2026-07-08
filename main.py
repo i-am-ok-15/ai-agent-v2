@@ -1,6 +1,6 @@
 import os
 import argparse
-import json
+import sys
 from prompts import system_prompt
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -59,22 +59,38 @@ def main():
         {"role": "user", "content": prompt},
     ]
 
-    completion = get_completion(client, messages, MODEL, tools=available_functions)
-    verify_completion(completion)
+    loop_count = 20
+    for _ in range (loop_count):
 
-    message = completion.choices[0].message
-    if not message.tool_calls:
-        if verbose:
-            verbose_printer = make_verbose_printer(simple_printer, completion, prompt)
-            verbose_printer()
-        else:
-            simple_printer(completion)
-    for tool_call in message.tool_calls:
-        result_message = call_function(tool_call, verbose)
-        if not result_message["content"]:
-            raise Exception("Error: Failed to generate content")
-        if verbose:
-            print(f"-> {result_message['content']}")
+        completion = get_completion(client, messages, MODEL, tools=available_functions)
+        verify_completion(completion)
+
+        message = completion.choices[0].message
+        messages.append(message)
+
+        if not message.tool_calls:
+            if verbose:
+                verbose_printer = make_verbose_printer(simple_printer, completion, prompt)
+                verbose_printer()
+            else:
+                simple_printer(completion)
+            return
+
+        for tool_call in message.tool_calls:
+            result_message = call_function(tool_call, verbose)
+            messages.append(result_message)
+            if not result_message["content"]:
+                raise Exception("Error: Failed to generate content")
+            if verbose:
+                print(f"-> {result_message['content']}")
+        loop_count -= 1
+    
+    if loop_count == 0:
+        print("Error: Maximum loop count reached")
+        sys.exit(1)
+
+    
+
 
 
 
