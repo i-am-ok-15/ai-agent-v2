@@ -5,7 +5,7 @@ from prompts import system_prompt
 from dotenv import load_dotenv
 from openai import OpenAI
 from config import BASE_URL, MODEL
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 def client_setup():
     load_dotenv()
@@ -63,18 +63,22 @@ def main():
     verify_completion(completion)
 
     message = completion.choices[0].message
-    if message.tool_calls:
-        for tool_call in message.tool_calls:
-            function_args = json.loads(tool_call.function.arguments or "{}")
-            print(f"Calling function: {tool_call.function.name}({function_args})")
-    else:
-        print(message.content)
+    if not message.tool_calls:
+        if verbose:
+            verbose_printer = make_verbose_printer(simple_printer, completion, prompt)
+            verbose_printer()
+        else:
+            simple_printer(completion)
+    for tool_call in message.tool_calls:
+        result_message = call_function(tool_call, verbose)
+        if not result_message["content"]:
+            raise Exception("Error: Failed to generate content")
+        if verbose:
+            print(f"-> {result_message['content']}")
 
-    if verbose:
-        verbose_printer = make_verbose_printer(simple_printer, completion, prompt)
-        verbose_printer()
-    else:
-        simple_printer(completion)
+
+
+
 
 if __name__ == "__main__":
 
